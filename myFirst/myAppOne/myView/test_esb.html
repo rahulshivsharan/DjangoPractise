@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>ESB Services Testing Page</title>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+		<style type="text/css">
+			.top-buffer{
+				margin-top:20px;
+			}
+		</style>
+		<script type="text/javaScript">
+			jQuery(document).ready(function(){
+				//alert("JQuery Loaded......");
+				jQuery("#successMsg").hide();
+				jQuery("#provision_SuccessMsg").hide();
+				
+				/* Code for Create Lead  */	
+				jQuery("#myBtn").click(function(){
+					jQuery("#myModal").modal("show");
+					jQuery("#successMsg").hide();
+
+					var firstName = jQuery("#firstName").val();
+					var lastName = jQuery("#lastName").val();
+					var emailId = jQuery("#email").val();
+					var phoneNo = jQuery("#phoneNo").val();
+					var url = "/createLead";
+					var customer_name = firstName + " "+ lastName;
+					var requestParam = {
+						"customer_name" : customer_name,
+						"subject" : "Create Lead for Reliance Jio Cloud",
+						"customer_email" : emailId,
+						"customer_phoneNo" : phoneNo,
+						"msg" : "Customer Request for Jio-Cloud [Lead]"
+					}
+					console.log("\n NAME "+customer_name+"\n EMAIL-ID "+emailId+"\n PHONE-NO "+phoneNo);
+					jQuery.post(url,requestParam,function(data){
+						jQuery("#myModal").modal("hide");
+						jQuery("#successMsg").text(data);
+						jQuery("#successMsg").show(500);
+					});
+				});
+
+
+				/* Code for Get Customer Info  */
+				jQuery("#custInfoBtn").click(function(){
+					jQuery("#myModal").modal("show");
+					jQuery("#successMsg").hide();
+					
+					var url = "/custinfo";
+					jQuery.get(url,{"custid" : "100"},function(data){
+						var responseData = data;
+						console.log("Customer Name "+responseData["customerinfo"]["customername"]);	
+						jQuery("#customerInfo_name").append(responseData["customerinfo"]["customername"]);
+						jQuery("#customerInfo_email").append(responseData["customerinfo"]["email"]);
+						jQuery("#customerInfo_mobileNumber").append(responseData["customerinfo"]["mobilenumber"]);
+						jQuery("#customerInfo_compant").append(responseData["customerinfo"]["company"]);
+						jQuery("#myModal").modal("hide");
+					});
+				});
+
+				jQuery("#myBtn_Provision").click(function(){
+					console.log()
+					var url = "/provisionUser",
+					customerName = jQuery("#provision_customerName").val(),
+					password = jQuery("#provision_customerPassword").val(),
+					email = jQuery("#provision_customerEmail").val(),
+					otp = jQuery("#provision_customerOTP").val(),
+					phoneNo = jQuery("#provision_customerPhoneNo").val();
+
+					jQuery("#provision_SuccessMsg").hide();
+					jQuery("#myModal").modal("show");
+
+					var requestObj = {
+						"provision_customerName" : customerName,
+						"provision_customerEmail" : email,
+						"provision_customerPassword" : password,
+						"provision_customerOTP" : otp,
+						"provision_customerPhoneNo" : phoneNo 	
+					};					
+					console.log("Phone No "+phoneNo);
+
+					jQuery.post(url,requestObj,function(data){
+						var responseObj = data;
+						console.log(" Message  "+responseObj["provisionaccountResponse"]["msg"]);
+						var msg = responseObj["provisionaccountResponse"]["msg"]
+						var code = responseObj["provisionaccountResponse"]["code"]
+						
+						jQuery("#provision_SuccessMsg").text(msg);
+						jQuery("#provision_SuccessMsg").show(500);	
+						jQuery("#myModal").modal("hide");
+							
+					});
+				});
+
+				jQuery('.js-captcha-refresh').click(function(){
+					var url = '/cap_load'
+    					jQuery.getJSON(url, {}, function(json) {
+        					// This should update your captcha image src and captcha hidden input
+						jQuery("div.myCaptchaDiv").append("<img src='/myView/out.png' />");
+    					});
+
+    					return false;
+				});
+			});
+		</script>	
+	</head>
+	<body>
+		<div class="container">
+			<div class="page-header">
+				<h4>CAPTCHA PRACTISE</h4>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					<form id="captcha_form" action="." method="POST">
+						<div class="myCaptchaDiv"></div>
+					 	<button class='js-captcha-refresh'>LOAD</button>
+					</form>
+				</div>
+			</div>	
+		</div>	
+		<div class="container">
+			<div class="page-header">
+				<h4>Create Lead API</h4>
+			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<div class="alert alert-info" id="successMsg">No Message</div>
+				</div>
+			</div>
+			<div class="row top-buffer">
+				<div class="col-md-8">
+					<form class="form-horizontal" role="form">
+						<div class="form-group">
+							<label for="firstName" class="col-md-2 control-label">First Name</label>
+							<div class="col-md-10">
+								<input type="text" class="form-control" id="firstName" placeholder="First Name" />
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="lastName" class="col-md-2 control-label">Last Name</label>
+							<div class="col-md-10">
+								<input type="text" class="form-control" id="lastName" placeholder="Last Name" />
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="email" class="col-md-2 control-label">Email Id</label>
+							<div class="col-md-10">
+								<input type="text" class="form-control" id="email" placeholder="Email ID" />
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="phoneNo" class="col-md-2 control-label">Phone Number</label>
+							<div class="col-md-10">
+								<input type="text" class="form-control" id="phoneNo" placeholder="Phone Number" />
+							</div>
+						</div>
+						<div class="form-group">
+						    	<div class="col-sm-offset-2 col-sm-10">
+						      		<input type="button" id="myBtn" class="btn btn-default" value="Enter" />
+						    	</div>
+  						</div>
+					</form>
+				</div>
+			</div><!--ROW END -->
+		</div><!--lead creation container -->
+		
+		<div class="container">
+			<div class="page-header">
+				<h4>Get Customer Info</h4>
+			</div>
+			<div class="row">
+				<div class="col-md-8">
+					<input type="button" class="btn btn-large" value="GET-CUSTOMER-INFO" id="custInfoBtn"/>
+					<div id="customerInfo">
+						<h3 id="customerInfo_name"></h3>
+						<h3 id="customerInfo_email"></h3>
+						<h3 id="customerInfo_mobileNumber"></h3>
+						<h3 id="customerInfo_compant"></h3>
+					</div>	
+				</div>
+			</div>
+		</div>
+
+
+		<div class="modal fade" id="myModal" data-backdrop="static">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-body">
+						<div class="progress">
+  							<div 	class="progress-bar progress-bar-striped active" 
+								role="progressbar" 
+								aria-valuenow="45" 
+								aria-valuemin="0" 
+								aria-valuemax="100" 
+								style="width: 100%">
+    								<span class="sr-only">45% Complete</span>
+  							</div>
+						</div>	
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<div class="container">
+			<div class="page-header">
+				<h4>Provision User UI</h4>
+			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<div class="alert alert-info" id="provision_SuccessMsg">No Message</div>
+				</div>
+			</div>
+			<div class="row top-buffer">
+				<div class="col-md-8">
+					<form class="form-horizontal" role="form">
+						<div class="form-group">
+							<label for="provision_customerName" class="col-md-2 control-label">Customer Name</label>
+							<div class="col-md-10">
+								<input type="text" class="form-control" id="provision_customerName" placeholder="Customer Name" />
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="provision_customerEmail" class="col-md-2 control-label">Email Id</label>
+							<div class="col-md-10">
+								<input type="text" class="form-control" id="provision_customerEmail" placeholder="Email ID" />
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="provision_customerPassword" class="col-md-2 control-label">Password</label>
+							<div class="col-md-10">
+								<input type="password" class="form-control" id="provision_customerPassword" placeholder="Password" />
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="provision_customerOTP" class="col-md-2 control-label">OTP</label>
+							<div class="col-md-10">
+								<input type="password" class="form-control" id="provision_customerOTP" placeholder="OTP" />
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="provision_customerPhoneNo" class="col-md-2 control-label">Phone No.</label>
+							<div class="col-md-10">
+								<input type="text" class="form-control" id="provision_customerPhoneNo" placeholder="Phone Number" />
+							</div>
+						</div>
+						<div class="form-group">
+						    	<div class="col-sm-offset-2 col-sm-10">
+						      		<input type="button" id="myBtn_Provision" class="btn btn-default" value="Enter" />
+						    	</div>
+  						</div>
+					</form>
+				</div>
+			</div><!--ROW END -->
+		</div><!--lead creation container -->
+	</body>
+</html>

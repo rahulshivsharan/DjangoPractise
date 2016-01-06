@@ -1,0 +1,69 @@
+<!DOCTYPE HTML>
+<html ng-app="MyModule">
+	<head>
+		<title>Rest Angualar Request</title>
+		{% load staticfiles %}
+	</head>
+	<body ng-controller="ServerCtrl">
+		<script src="{% static 'restApp/js/angular.js' %}"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.2/angular-resource.min.js"></script>
+		<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/restangular/1.3.1/restangular.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
+		<script type="text/javaScript">
+			(function(){
+				var app = angular.module("MyModule",["ngResource","restangular"]);
+				
+				app.service("serverFactory",function($resource){
+					var url = "/rest/server/";
+					
+					return $resource(url,{},{
+						getServers : {
+							method : "GET",
+							isArray : false
+						} 	
+					});
+				});
+				
+				app.service("serverFactoryTwo",function(Restangular){
+					var url = "/rest/server/";
+					return Restangular.oneUrl("servers",url);
+				});
+
+				app.controller("ServerCtrl",function($scope,serverFactory,Restangular,serverFactoryTwo){
+					var servers = serverFactory.getServers();
+					
+					// using $resource as factory	
+					servers.$promise.then(function(data){
+						var serverList = data.servers;
+						angular.forEach(serverList,function(server,index){
+							console.log("Server Name "+server.name);	
+						});
+					},function(error){
+						console.log("Error "+error.data.msg);
+					});
+
+					// Restangular	
+					var ServerResponse  = Restangular.oneUrl("servers","/rest/server/");
+					ServerResponse.get().then(function(data){
+						var serverList = data.servers;
+						angular.forEach(serverList,function(server,index){
+							console.log("[Server Name] "+server.name);	
+						});
+					},function(error){
+						console.log("REST Error "+error.data.msg);
+					});
+
+					// Restangular as a factory
+					serverFactoryTwo.get().then(function(data){
+						var serverList = data.servers;
+						angular.forEach(serverList,function(server,index){
+							console.log(index+" "+server.name);	
+						});
+					},function(error){
+						console.log("Factory Error "+error.data.msg);
+					});	
+				});
+			 })();
+		</script>
+	</body>
+</html>
