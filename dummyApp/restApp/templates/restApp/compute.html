@@ -29,7 +29,22 @@
 					return Restangular.oneUrl("servers",url);
 				});
 
-				app.controller("ServerCtrl",function($scope,serverFactory,Restangular,serverFactoryTwo){
+				app.factory("serverFactoryThree",function(Restangular,$q){
+					var url = "/rest/server/";
+					var deferred = $q.defer();
+					Restangular.oneUrl("servers",url).get().then(successFn,errorFn);
+					function successFn(data){
+						deferred.resolve(data.servers);	
+					}
+
+					function errorFn(error){
+						deferred.reject(error.data.msg);
+					}
+
+					return deferred.promise; 
+				});
+
+				app.controller("ServerCtrl",function($scope,serverFactory,Restangular,serverFactoryTwo,serverFactoryThree){
 					var servers = serverFactory.getServers();
 					
 					// using $resource as factory	
@@ -61,7 +76,17 @@
 						});
 					},function(error){
 						console.log("Factory Error "+error.data.msg);
-					});	
+					});
+
+
+					var promiseObj = serverFactoryThree;
+					promiseObj.then(function(serverList){
+						angular.forEach(serverList,function(server,index){
+							console.log(server.os+" -: "+server.name);	
+						});
+					},function(errorMsg){
+						console.log(errorMsg);
+					});
 				});
 			 })();
 		</script>
